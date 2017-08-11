@@ -70,6 +70,19 @@ foreach ($controllers as $c_name => $ip) {
 
 	$wlc_total_sta_11ac = explode(" ", get_snmp("1.3.6.1.4.1.4329.15.3.2.10.2.8.0", "Gauge32"));
 	sendGraphite("wlc_total_sta_11ac", $wlc_total_sta_11ac[0]);
+
+	 /**
+     * RADAR Counters
+     */
+	$active_threats = explode(" ", get_snmp("1.3.6.1.4.1.4329.15.3.11.4.0", "Gauge32"));
+	sendGraphite("radar.active_threats", $active_threats[0]);
+
+	$friendly_aps = explode(" ", get_snmp("1.3.6.1.4.1.4329.15.3.11.5.0", "Gauge32"));
+	sendGraphite("radar.friendly_ap_count", $friendly_aps[0]);
+
+	$uncat_aps = explode(" ", get_snmp("1.3.6.1.4.1.4329.15.3.11.6.0", "Gauge32"));
+	sendGraphite("radar.uncategorised_ap_count", $uncat_aps[0]);
+
 	}
 
 	/**
@@ -112,6 +125,17 @@ foreach ($controllers as $c_name => $ip) {
 	sendGraphite("wlc_total_memory", $total_memory[0]);
 	$free_memory = explode(" ", get_snmp("1.3.6.1.4.1.5624.1.2.49.1.3.1.1.5.1.2.0", "Gauge32"));
 	sendGraphite("wlc_free_memory", $free_memory[0]);
+
+	/**
+ 	 * Number of Radios per Channel
+ 	 */
+     $out = snmp2_real_walk($ip, $community, "1.3.6.1.4.1.4329.15.3.2.10.3.1.2");
+
+     	foreach ($out as $key => $value) {
+        	$tmp = explode(".",$key);
+			$channel = $tmp[count($tmp)-1];
+         	sendGraphite("rf.{$channel}", sanatize_snmp("Gauge32", $value));
+    }
 
 	/**
  	 * Clients per ESS
